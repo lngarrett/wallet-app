@@ -343,9 +343,36 @@ resource "aws_alb_listener" "wallet_app_http" {
   protocol          = "HTTP"
 
   default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+ }
+
+}
+
+resource "aws_acm_certificate" "wallet_app" {
+  domain_name       = "wallet-app.whisk.ee"
+  validation_method = "DNS"
+}
+
+resource "aws_alb_listener" "wallet_app_https" {
+  load_balancer_arn = aws_alb.wallet_app.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate.wallet_app.arn
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.wallet_app.arn
   }
+}
+
+output "domain_validations" {
+  value = aws_acm_certificate.wallet_app.domain_validation_options
 }
 
 output "alb_url" {
