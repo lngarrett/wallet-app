@@ -1,0 +1,1 @@
+aws ecs update-service --cluster app --service wallet-app --force-new-deployment
